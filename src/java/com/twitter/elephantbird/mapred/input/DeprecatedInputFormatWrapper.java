@@ -12,6 +12,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.StatusReporter;
@@ -122,6 +123,36 @@ public class DeprecatedInputFormatWrapper<K, V> implements org.apache.hadoop.map
     }
   }
 
+  private static class ReporterWrapper extends StatusReporter {
+
+    private Reporter wrappedReporter;
+
+    public ReporterWrapper(Reporter reporter) {
+      wrappedReporter = reporter;
+    }
+
+    @Override
+    public Counter getCounter(Enum<?> anEnum) {
+      return wrappedReporter.getCounter(anEnum);
+    }
+
+    @Override
+    public Counter getCounter(String s, String s1) {
+      System.out.println("getCounter s=" + s + " s1=" + s1);
+      return wrappedReporter.getCounter(s, s1);
+    }
+
+    @Override
+    public void progress() {
+      wrappedReporter.progress();
+    }
+
+    @Override
+    public void setStatus(String s) {
+      wrappedReporter.setStatus(s);
+    }
+  }
+
   private static class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
 
     private org.apache.hadoop.mapreduce.RecordReader<K, V> realReader;
@@ -158,7 +189,7 @@ public class DeprecatedInputFormatWrapper<K, V> implements org.apache.hadoop.map
       TaskAttemptContext taskContext =
         new TaskInputOutputContext(
             oldJobConf, TaskAttemptID.forName(oldJobConf.get("mapred.task.id")),
-            null, null, (StatusReporter) reporter) {
+            null, null, new ReporterWrapper(reporter)) {
 
               public Object getCurrentKey() throws IOException, InterruptedException {
                 throw new RuntimeException("not implemented");

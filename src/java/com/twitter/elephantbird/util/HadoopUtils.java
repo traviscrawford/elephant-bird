@@ -26,8 +26,12 @@ public class HadoopUtils {
    */
   public static Counter getCounter(JobContext ctx, String group, String counter) {
     if (ctx instanceof TaskInputOutputContext<?, ?, ?, ?>) {
-      return ((TaskInputOutputContext<?, ?, ?, ?>)ctx).getCounter(group, counter);
+      Counter c = ((TaskInputOutputContext<?, ?, ?, ?>)ctx).getCounter(group, counter);
+      if (c != null) {
+        return c;
+      }
     }
+
     String name = group + ":" + counter;
     LOG.warn("Context is not a TaskInputOutputContext. "
         + "will return a dummy counter for '" + name + "'");

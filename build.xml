@@ -80,8 +80,7 @@
           destdir="@{destDir}"
           classpathref="@{classPathRef}"
           fork="true"
-          debug="on"
-          debuglevel="lines,source"/>
+          debug="on"/>
     </sequential>
   </macrodef>
   
